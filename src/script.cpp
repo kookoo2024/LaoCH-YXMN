@@ -34,7 +34,7 @@ std::vector<std::wstring> Tokens(const std::wstring& s) {
     std::vector<std::wstring> out;
     std::wstring cur;
     for (wchar_t c : s) {
-        if (c == L' ' || c == L'\t' || c == L'\x3000') {
+        if (c == L' ' || c == L'\t' || c == L'\r' || c == L'\x3000') {
             if (!cur.empty()) { out.push_back(cur); cur.clear(); }
         } else {
             cur += c;
