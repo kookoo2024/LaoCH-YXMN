@@ -1,0 +1,9 @@
+build/
+out/
+.vs/
+*.obj
+*.res
+*.o
+*.pdb
+*.ilk
+LaoCH.ini.tmp
