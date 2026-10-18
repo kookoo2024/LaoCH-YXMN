@@ -6,6 +6,10 @@ on:
     types: [published]
   pull_request:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to attach files to (optional)'
+        required: false
 permissions:
   contents: write
 jobs:
@@ -17,13 +21,25 @@ jobs:
         run: cmake -S . -B build -A x64
       - name: Build
         run: cmake --build build --config Release
+      - name: Package zip
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dist/LaoCH-YXMN | Out-Null
+          Copy-Item build/Release/LaoCH-YXMN.exe dist/LaoCH-YXMN/
+          Copy-Item README.md dist/LaoCH-YXMN/
+          Compress-Archive -Path dist/LaoCH-YXMN -DestinationPath dist/LaoCH-YXMN.zip -Force
+          Get-FileHash build/Release/LaoCH-YXMN.exe -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLower())  LaoCH-YXMN.exe" } | Out-File -Encoding ascii dist/SHA256.txt
+          Get-FileHash dist/LaoCH-YXMN.zip -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLower())  LaoCH-YXMN.zip" } | Out-File -Encoding ascii -Append dist/SHA256.txt
       - uses: actions/upload-artifact@v4
         with:
           name: LaoCH-YXMN
-          path: build/Release/LaoCH-YXMN.exe
-      - name: Attach exe to release
-        if: github.event_name == 'release'
+          path: |
+            dist/LaoCH-YXMN.zip
+            dist/SHA256.txt
+      - name: Attach to release
+        if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.tag != '')
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release upload "${{ github.event.release.tag_name }}" build/Release/LaoCH-YXMN.exe --clobber
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: gh release upload "$TAG" dist/LaoCH-YXMN.zip dist/SHA256.txt build/Release/LaoCH-YXMN.exe --clobber
