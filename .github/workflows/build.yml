@@ -1,0 +1,29 @@
+name: build
+on:
+  push:
+    branches: [main]
+  release:
+    types: [published]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -S . -B build -A x64
+      - name: Build
+        run: cmake --build build --config Release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LaoCH-YXMN
+          path: build/Release/LaoCH-YXMN.exe
+      - name: Attach exe to release
+        if: github.event_name == 'release'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" build/Release/LaoCH-YXMN.exe --clobber
