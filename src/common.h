@@ -22,7 +22,7 @@
 #include <cwchar>
 
 #define APP_TITLE   L"LaoCH 键位助手"
-#define APP_VERSION L"1.0.0"
+#define APP_VERSION L"1.0.1"
 #define APP_CLASS   L"LaoCH_YXMN_Main"
 
 enum : UINT {
